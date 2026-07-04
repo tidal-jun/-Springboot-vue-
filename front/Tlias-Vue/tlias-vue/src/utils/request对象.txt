@@ -1,0 +1,87 @@
+● 为解决上述问题，我们在前端项目开发时，通常会定义一个请求处理的工具类 - request.js。
+● 与服务端进行异步交互的逻辑，通常会封装到一个单独的api中，如：dept.js。
+
+【utils/request.js】
+import axios from 'axios'
+//创建axios实例对象
+const request = axios.create({
+  baseURL: 'https://apifoxmock.com...',
+  timeout: 600000
+})
+
+//axios的响应 response 拦截器
+request.interceptors.response.use(
+(response) => { //成功回调
+  return response.data
+},
+(error) => { //失败回调
+  return Promise.reject(error)
+})
+export default request
+
+
+
+统一封装请求API
+【api/dept.js】
+import request from '@/utils/request'
+//部门列表查询
+export const queryAllApi = () => request.get('/depts');
+
+
+
+
+直接通过api文件调用请求
+【dept/index.vue】
+import { queryAllApi } from '@/api/dept'
+//...省略
+//动态加载数据-查询部门
+const search = async () => {
+  const result = await queryAllApi()
+  deptList.value = result.data
+}
+
+
+
+
+
+
+=================================优化=================================
+
+为了便于后续利用，并且连接后端端口，这里以tomcat默认端口8080为例
+
+┌─────────────────────────────────────────┬───────────────────────────────────────────────────────┐
+│ 【utils/request.js】                    │ 【vite.config.js】                                     │
+│ import axios from 'axios'               │ server: {                                             │
+│ const request = axios.create({          │   proxy: {                                            │
+│   baseURL: '/api',                      │     '/api': {                                         │
+│   timeout: 600000                       │       target: 'http://localhost:8080',                │
+│ })                                      │       secure: false,                                  │
+│                                         │       changeOrigin: true,                             │
+│ request.interceptors.response.use(      │       rewrite: (path) => path.replace(/^\/api/, '')   │
+│   (response) => {                       │     }                                                 │
+│     return response.data                │   }                                                   │
+│   },                                    │ }                                                     │
+│   (error) => {                          │                                                       │
+│     return Promise.reject(error)        │                                                       │
+│   }                                     │                                                       │
+│ )                                       │                                                       │
+│ export default request                  │                                                       │
+└─────────────────────────────────────────┴───────────────────────────────────────────────────────┘
+
+(/^\/api/, '') 将/api替换成空串"", /表示为正则表达式，^表示开始， \/转义‘/’ api就是表示api， 最后一个/表示结束
+
+┌────────────────────┐        ┌──────────────────────┐        ┌────────────────────┐                               ┌────────────────────┐
+│    /depts          │   ──→  │    /api/depts        │   ──→  │    /depts          │ ─http://localhost:8080/depts→ │    /depts          │
+│   (dept.js)        │        │   (request.js)       │        │    (proxy)         │                               │(后端8080端口服务)   │
+└────────────────────┘        └──────────────────────┘        └────────────────────┘                               └────────────────────┘
+前端端口:5173                                                后端端口:8080
+
+
+
+这里为什么要添加api，是为了区分前端要访问的是动态资源还是静态资源，如果是动态资源就添加一个api路径
+但后面又要删除是因为，后端并没有api这个路径， 所以需要再次删除
+
+
+
+
+

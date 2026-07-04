@@ -1,0 +1,14 @@
+● 问题：目前执行登录操作，登录成功之后，并没有将令牌信息存起来，在后续的每次操作中，也就拿不到登录时的令牌信息了。
+● 方案：需要在登录成功后，将令牌等信息存储起来。在后续的请求中，再将令牌取出来，携带到服务端。
+
+流程：
+/login/index.vue （登录页） → 登录成功 → localStorage存储令牌 → /dept/index.vue（其他页面） → 从localStorage取出令牌，随请求发送给后端
+
+localStorage说明：
+● localStorage是浏览器提供的本地存储机制（5MB）。
+● 存储形式为key-value形式，键和值都是字符串类型。
+● API方法：
+  · localStorage.setItem(key, value)    //注入键值对
+  · localStorage.getItem(key)           //获取指定键的值  
+  · localStorage.removeItem(key)        //删除指定键
+  · localStorage.clear()                //清空所有键值对

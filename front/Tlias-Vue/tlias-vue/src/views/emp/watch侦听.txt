@@ -1,0 +1,34 @@
+# watch
+● 作用：侦听一个或多个响应式数据源，并在数据源变化时调用传入的回调函数。
+● 用法：
+1. 导入watch函数
+2. 执行watch函数，传入要侦听的响应式数据源（ref对象）和回调函数;
+
+import { ref, watch } from 'vue'
+const a = ref('')
+watch(a, (newVal , oldVal) => { //侦听a的变化！
+  console.log(`a的值为：新的值为: ${newVal}, 旧的值为: ${oldVal}`);
+})
+
+
+
+● 侦听对象的全部属性：
+import { ref, watch } from 'vue'
+const user = ref({name:'', age:10})
+watch(user, (newVal , oldVal) => { //侦听user对象中的全部属性的变化
+  console.log(`a的值为：newVal: ${newVal}, oldVal: ${oldVal}`);
+}, {deep: true})
+(深度侦听)
+
+● 第三个可选参数，常见两个选项：
+➢ deep (boolean)：是否深度侦听，默认浅层侦听。
+➢ immediate (boolean)：是否在侦听创建时立即触发回调函数。
+
+
+
+● 侦听对象的单个属性：
+import { ref, watch } from 'vue'
+const user = ref({name:'', age:10})
+watch( () => user.value.name , (newVal , oldVal) => { //侦听user对象中name的变化
+  console.log(`a的值为：newVal: ${newVal}, oldVal: ${oldVal}`);
+})
